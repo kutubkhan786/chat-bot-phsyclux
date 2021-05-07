@@ -1,0 +1,114 @@
+#modules we will need
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+from tkinter import *
+import pyttsx3 as pp
+import speech_recognition as s
+import threading
+
+
+#initialisatiaon of engine for voice module
+engine = pp.init()
+voices = engine.getProperty('voices')
+print(voices)
+engine.setProperty('voices', voices[0].id)
+bot = ChatBot("syclux")
+
+
+
+convo = [
+    'hello',
+    'hi there !',
+    'what is your name ?',
+    'My name is psyclux , i am created by kutub khan',
+    'how are you ?',
+    'I am doing great these days',
+    'thank you',
+    'In which city you live ?',
+    'I live in lucknow',
+    'In which language you talk?',
+    ' I mostly talk in english'
+]
+#this var trains the list you provide
+trainer = ListTrainer(bot)
+trainer.train(convo)
+
+main = Tk('phsyclux')
+main.geometry("600x750")
+main.title('phsyclux')
+
+def speak(word):
+    engine.say(word)
+    engine.runAndWait()
+
+# logo  image
+img = PhotoImage(file="nnn (2).gif")
+photL = Label(main, image=img)
+photL.pack(pady=5)
+
+
+def takeQuery():
+    sr = s.Recognizer()
+    print("your bot is listening try to speak")
+    with s.Microphone() as m:
+        try:
+            audio = sr.listen(m)
+            query = sr.recognize_google(audio, language='eng-in')
+            print(query)
+            textF.delete(0, END)
+            textF.insert(0, query)
+            Ask()
+        except Exception as e:
+            print(e)
+            print("not recognized")
+
+
+def Ask():        # function for msgs , scroll bar  , and voice out put
+    query = textF.get()
+    answer_bot = bot.get_response(query)
+    msg.insert(END, "you : " + query)
+    print(type(answer_bot))
+    msg.insert(END, "bot : " + str(answer_bot))
+    speak(answer_bot)
+    textF.delete(0,END)
+    msg.yview(END)
+
+#making a frame where there is a msgs input and output and sccroll bar
+frame = Frame(main)
+
+sc = Scrollbar(frame)
+msg = Listbox(frame, width=80, height=20, yscrollcommand=sc.set)
+sc.pack(side=RIGHT, fill=Y)
+msg.pack(side=LEFT, fill=BOTH, pady=10)
+
+frame.pack()
+
+
+
+
+
+
+
+#for pressing enter
+def enter_func(event):
+    btn.invoke()
+
+
+#text adding
+textF = Entry(main, font=("Verdana", 20))
+textF.pack(fill=X, pady=10)
+btn = Button(main, text="Ask", font=("verdana", 20), command=Ask)
+
+btn.pack()
+main.bind('<Return>', enter_func)
+
+def repeatl():
+    while True:
+        takeQuery()
+
+
+t = threading.Thread(target=repeatl)
+
+
+t.start()
+main.mainloop()
